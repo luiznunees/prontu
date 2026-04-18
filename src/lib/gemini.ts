@@ -23,16 +23,6 @@ export interface Secao {
   conteudo: string;
 }
 
-export interface GraficoData {
-  tipo?: "line" | "bar" | "pie" | "doughnut" | "area";
-  labels?: string[];
-  values?: number[];
-  titulo?: string;
-  eixoX?: string;
-  eixoY?: string;
-  cores?: string[];
-}
-
 export interface TrabalhoGerado {
   titulo: string;
   tema: string;
@@ -40,7 +30,6 @@ export interface TrabalhoGerado {
   secoes: Secao[];
   referencias: string[];
   palavrasChave: string[];
-  grafico?: GraficoData;
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -59,11 +48,24 @@ export async function generateTrabalho(
     numeroPaginas = 3,
   } = config;
 
-  const prompt = `Gere trabalho escolar BR com negrito, exemplos e gráficos quando aplicável.
+const prompt = `Gere trabalho escolar de ${disciplina} para ${serie}.
 Use **palavra** para negrito.
 Inclua exemplos práticos e exercício resolvido.
-Se o tópico tiver dados numéricos (como populações, temperaturas, forças), gere um objeto "grafico" com os dados.
-Retorne JSON: {"titulo":"txt","tema":"txt","disciplina":"${disciplina}","secoes":[{"titulo":"INTRODUÇÃO","conteudo":"txt **destaque**"},{"titulo":"DESENVOLVIMENTO","conteudo":"Exemplo... [gráfico: tipo=bar, dados={labels:[], values:[], titulo=txt]"},{"titulo":"CONCLUSÃO","conteudo":"txt"}],"referencias":["fonte"],"palavrasChave":["palavra"],"grafico":{"tipo":"line|bar|pie","labels":[], "values":[],"titulo":"txt"}}
+
+RETORNE JSON válido:
+{
+  "titulo": "Título",
+  "tema": "Palavras-chave",
+  "disciplina": "${disciplina}",
+  "secoes": [
+    {"titulo": "INTRODUÇÃO", "conteudo": "Texto explicando o tema..."},
+    {"titulo": "DESENVOLVIMENTO", "conteudo": "Explicação detalhada com exemplos..."},
+    {"titulo": "CONCLUSÃO", "conteudo": "Resumo..."}
+  ],
+  "referencias": ["Fonte 1", "Fonte 2"],
+  "palavrasChave": ["palavra1", "palavra2"]
+}
+
 Enunciado: ${enunciado}`;
 
   let lastError: Error | null = null;
@@ -98,6 +100,10 @@ Enunciado: ${enunciado}`;
           
           // Limpar sequências inválidas comuns
           jsonStr = jsonStr.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]");
+          // Corrigir aspas simples duplicadas
+          jsonStr = jsonStr.replace(/''/g, '"');
+          // Corrigir中文aspas
+          jsonStr = jsonStr.replace(/[""]/g, '"').replace(/[""]/g, '"');
           
           return JSON.parse(jsonStr) as TrabalhoGerado;
         } else {
