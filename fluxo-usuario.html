@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fluxo de Usuário - Prontu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-ink: #0D0D0D;
+      --color-paper: #F7F5F0;
+      --color-accent: #FF4D00;
+      --color-accent-soft: #FFF0EA;
+      --color-blue: #1A3FFF;
+      --color-yellow: #FFE600;
+      --color-green: #00C46A;
+      --color-gray-100: #F0EDE8;
+      --color-gray-300: #C4BFB8;
+      --color-gray-500: #7A746E;
+      --color-gray-700: #3D3935;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --shadow-md: 4px 4px 0 0 #0D0D0D;
+      --shadow-lg: 6px 6px 0 0 #0D0D0D;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-paper);
+      color: var(--color-ink);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 700; }
+
+    .container { max-width: 1000px; margin: 0 auto; }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 3px solid var(--color-ink);
+    }
+
+    .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .header p { color: var(--color-gray-700); }
+
+    .flow-section { margin-bottom: 3rem; }
+
+    .flow-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--color-ink);
+      color: white;
+      display: inline-block;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      background: white;
+      border: 2px solid var(--color-ink);
+      border-radius: 8px;
+    }
+
+    .step-num {
+      width: 40px;
+      height: 40px;
+      background: var(--color-accent);
+      color: white;
+      font-family: var(--font-display);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .step-content { flex: 1; }
+    .step-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .step-desc { color: var(--color-gray-700); font-size: 0.875rem; }
+    .step-code {
+      margin-top: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: var(--color-gray-100);
+      padding: 0.5rem;
+      border-radius: 4px;
+      color: var(--color-gray-700);
+    }
+
+    .arrow {
+      text-align: center;
+      font-size: 2rem;
+      color: var(--color-accent);
+      margin: -0.5rem 0;
+    }
+
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--color-ink);
+      border-radius: 4px;
+    }
+
+    .badge-green { background: var(--color-green); color: white; }
+    .badge-yellow { background: var(--color-yellow); color: var(--color-ink); }
+    .badge-accent { background: var(--color-accent); color: white; }
+    .badge-blue { background: var(--color-blue); color: white; }
+
+    .action-box {
+      background: var(--color-accent-soft);
+      border: 2px solid var(--color-accent);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+
+    .action-box strong { color: var(--color-accent); }
+
+    .user-type {
+      padding: 2rem;
+      border: 3px solid var(--color-ink);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .user-type h3 { margin-bottom: 1rem; }
+    .user-type .tag { margin-right: 0.5rem; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      border: 2px solid var(--color-ink);
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    th { background: var(--color-ink); color: white; }
+    tr:nth-child(even) td { background: var(--color-gray-100); }
+
+    .feature-list { list-style: none; }
+    .feature-list li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--color-gray-300);
+    }
+    .feature-list li::before { content: "→ "; color: var(--color-accent); }
+
+    .warning-box {
+      background: #FFF3CD;
+      border: 2px solid #FFC107;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+
+    .final-state {
+      background: var(--color-green);
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🗺️ Fluxo de Usuário - Prontu</h1>
+      <p>Mapeamento do que um visitante pode fazer no sistema</p>
+    </header>
+
+    <!-- VISITANTE NÃO LOGADO -->
+    <section class="flow-section">
+      <h2>👤 Visitante Não Logado</h2>
+
+      <div class="user-type">
+        <h3>Primeiro Acesso</h3>
+        <p>Usuário queaccessa o site pela primeira vez, sem conta criada.</p>
+        <div style="margin-top: 1rem;">
+          <span class="badge badge-green">Grátis</span>
+          <span class="badge badge-yellow">1 trabalho/mês</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Acessa Landing Page</div>
+          <div class="step-desc">Visualiza página inicial com:</div>
+          <ul class="feature-list">
+            <li>Hero com copy de marketing (valores, diferenciais)</li>
+            <li>Seção "Como Funciona" (3 passos)</li>
+            <li>Comparativo ChatGPT vs Prontu</li>
+            <li>Planos de preços (Starter R$14,90 / Popular R$34,90 / Pro R$59,90)</li>
+            <li>Botão "Entrar" no header</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Preenche Formulário de Trabalho</div>
+          <div class="step-desc">No formulário, preenche:</div>
+          <ul class="feature-list">
+            <li>Enunciado ou tema do trabalho (obrigatório, mín 20 chars)</li>
+            <li>Nome completo do aluno (obrigatório)</li>
+            <li>Escola (obrigatório)</li>
+            <li>Disciplina (dropdown com 13 opções)</li>
+            <li>Série (ex: "2 Médio")</li>
+            <li>Turma (opcional)</li>
+            <li>Cidade (opcional)</li>
+            <li>Observação personalizada (opcional)</li>
+            <li>Estilo do documento (escolha visual da capa)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Clica em "Gerar meu trabalho"</div>
+          <div class="step-desc">Sistema detecta que não está logado</div>
+          <div class="action-box">
+            <strong>→ Abre Modal de Autenticação</strong>
+          </div>
+          <div class="step-code">
+            if (!user) { setIsAuthModalOpen(true); }
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Modal de Login/Cadastro</div>
+          <div class="step-desc">Pode criar conta ou fazer login via:</div>
+          <ul class="feature-list">
+            <li>Email + Senha</li>
+            <li>Google OAuth</li>
+          </ul>
+          <div class="warning-box">
+            ⚠️ Ao criar conta, ganha <strong>1 trabalho grátis por mês</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USUÁRIO LOGADO (FREE) -->
+    <section class="flow-section">
+      <h2>✅ Usuário Logado (Plano Grátis)</h2>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Preenche formulário e gera trabalho</div>
+          <div class="step-desc">Após login, pode gerar trabalho diretamente</div>
+          <div class="action-box">
+            <strong>✓ Primeiro trabalho do mês: gratuito</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Tela de Resultado</div>
+          <div class="step-desc">Após geração (~40s), vê:</div>
+          <ul class="feature-list">
+            <li>Confetes de celebração</li>
+            <li>Botão principal: "⬇ Baixar PDF"</li>
+            <li>Ferramentas gratuitas:</li>
+            <ul>
+              <li><strong>Analisar Originalidade</strong> - Detecta se parece IA</li>
+              <li><strong>Humanizar Texto</strong> - Reescrever para parecer humano</li>
+            </ul>
+            <li>Rodapé: créditos restantes + botão "Gerar Outro"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Tenta gerar segundo trabalho no mesmo mês</div>
+          <div class="step-desc">Sistema verifica limite</div>
+          <div class="step-code">
+            if (plano === "gratis" && trabalhos_gerados_mes >= 1) {
+              setIsPayModalOpen(true);
+            }
+          </div>
+          <div class="action-box">
+            <strong>→ Abre Modal de Pagamento</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Modal de Pagamento</div>
+          <div class="step-desc">Oferece planos:</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Plano</th>
+                <th>Preço</th>
+                <th>Trabalhos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Starter</td>
+                <td>R$ 14,90</td>
+                <td>5 trabalhos</td>
+              </tr>
+              <tr>
+                <td>Popular ⭐</td>
+                <td>R$ 34,90</td>
+                <td>15 trabalhos</td>
+              </tr>
+              <tr>
+                <td>Pro</td>
+                <td>R$ 59,90</td>
+                <td>30 trabalhos</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="step-code">Pagamento via PIX via AbacatePay</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USUÁRIO COM CRÉDITOS -->
+    <section class="flow-section">
+      <h2>💎 Usuário com Créditos (Pagante)</h2>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Dashboard</div>
+          <div class="step-desc">Acessível via header "🏠 Meu Dashboard"</div>
+          <ul class="feature-list">
+            <li>Mostra nome do usuário</li>
+            <li>Quantidade de créditos restantes</li>
+            <li>Histórico de trabalhos gerados</li>
+            <li>Botão para comprar mais créditos</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Gera trabalhos livremente</div>
+          <div class="step-desc">Cada trabalho subtrai 1 crédito</div>
+          <div class="action-box">
+            <strong>✓ Pode usar todas as ferramentas:</strong>
+            <ul class="feature-list" style="margin-top: 0.5rem;">
+              <li>Analisar originalidade</li>
+              <li>Humanizar texto (3 níveis: leve, médio, forte)</li>
+              <li>Baixar PDF original ou humanizado</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Créditos acabaram</div>
+          <div class="step-desc">Ao tentar gerar novo trabalho com 0 créditos</div>
+          <div class="action-box">
+            <strong>→ Abre Modal de Pagamento novamente</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLUXO COMPLETO -->
+    <section class="flow-section">
+      <h2>🔄 Resumo Visual do Fluxo</h2>
+
+      <pre style="background: var(--color-ink); color: var(--color-paper); padding: 1.5rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.75rem; overflow-x: auto;">
+┌─────────────────────────────────────────────────────────────────────┐
+│                        VISITANTE (não logado)                       │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Landing Page → Formulário → [Não logado] → Modal Auth             │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+              ┌───────────────────┴───────────────────┐
+              ▼                                       ▼
+┌─────────────────────────┐             ┌─────────────────────────┐
+│   LOGIN / CADASTRO      │             │   NÃO CRIA CONTA        │
+│   → cria conta gratis   │             │   → sai do site         │
+└─────────────────────────┘             └─────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│              USUÁRIO LOGADO (plano: gratis)                        │
+│              → 1 trabalho grátis por mês                           │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+              ┌───────────────────┴───────────────────┐
+              ▼                                       ▼
+┌─────────────────────────┐             ┌─────────────────────────┐
+│  Primeiro trabalho     │             │  2º trabalho (mês)     │
+│  → Tela Resultado      │             │  → Modal Pagamento     │
+│    - Baixar PDF        │             │    - Starter R$14,90   │
+│    - Analisar          │             │    - Popular R$34,90   │
+│    - Humanizar         │             │    - Pro R$59,90       │
+└─────────────────────────┘             └─────────────────────────┘
+              │                                       │
+              ▼                                       ▼
+┌─────────────────────────┐             ┌─────────────────────────┐
+│  Dashboard              │             │  Compra créditos       │
+│  - Histórico            │             │  → Usuário pagante     │
+│  - Créditos: 0          │             │  → +créditos           │
+└─────────────────────────┘             └─────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│              USUÁRIO PAGANTE (plano: starter/popular/pro)            │
+│              → créditos > 0                                        │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Gera trabalhos → Tela Resultado → Ferramentas (analisar/humanizar) │
+│  Créditos diminuem → 0 créditos → Modal Pagamento                  │
+└─────────────────────────────────────────────────────────────────────┘
+      </pre>
+    </section>
+
+    <!-- MAPA DE PÁGINAS -->
+    <section class="flow-section">
+      <h2>📄 Páginas e Componentes do Sistema</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Rota / Componente</th>
+            <th>Arquivo</th>
+            <th>Função</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>/</strong> (Landing)</td>
+            <td>src/app/page.tsx</td>
+            <td>Página inicial com marketing e formulário</td>
+          </tr>
+          <tr>
+            <td><strong>/dashboard</strong></td>
+            <td>src/app/dashboard/page.tsx</td>
+            <td>Área do usuário logado</td>
+          </tr>
+          <tr>
+            <td><strong>/termos</strong></td>
+            <td>src/app/termos/page.tsx</td>
+            <td>Termos de uso</td>
+          </tr>
+          <tr>
+            <td><strong>/privacidade</strong></td>
+            <td>src/app/privacidade/page.tsx</td>
+            <td>Política de privacidade</td>
+          </tr>
+          <tr>
+            <td>FormularioTrabalho</td>
+            <td>src/components/FormularioTrabalho.tsx</td>
+            <td>Formulário de criação de trabalho</td>
+          </tr>
+          <tr>
+            <td>TelaResultado</td>
+            <td>src/components/TelaResultado.tsx</td>
+            <td>Resultado após geração + ferramentas</td>
+          </tr>
+          <tr>
+            <td>AuthModal</td>
+            <td>src/components/AuthModal.tsx</td>
+            <td>Modal de login/cadastro</td>
+          </tr>
+          <tr>
+            <td>ModalPagamento</td>
+            <td>src/components/ModalPagamento.tsx</td>
+            <td>Modal de compra de créditos</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ESTADOS POSSÍVEIS -->
+    <section class="flow-section">
+      <h2>🎯 Estados do Usuário no Sistema</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Estado</th>
+            <th>Condição</th>
+            <th>Ação Restrita</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-gray">Visitante</span></td>
+            <td>Não logado</td>
+            <td>Não pode gerar trabalho (pede login)</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-yellow">Grátis</span></td>
+            <td>Logado, 1º trabalho/mês</td>
+            <td>Pode gerar 1x, depois pedir pagamento</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-green">Pagante</span></td>
+            <td>Comprou créditos</td>
+            <td>Pode gerar até créditos terminarem</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-accent">Sem créditos</span></td>
+            <td>Créditos = 0</td>
+            <td>Bloqueado até comprar mais</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- CONCLUSÃO -->
+    <div class="final-state">
+      ✅ Fluxo mapeado! Este é o comportamento atual baseado nos arquivos do projeto.
+    </div>
+
+  </div>
+</body>
+</html>

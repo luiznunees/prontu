@@ -1,26 +1,73 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Primárias */
+  --color-ink: #0D0D0D;
+  --color-paper: #F7F5F0;
+  --color-accent: #FF4D00;
+  --color-accent-soft: #FFF0EA;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Secundárias */
+  --color-blue: #1A3FFF;
+  --color-yellow: #FFE600;
+  --color-green: #00C46A;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Neutros */
+  --color-gray-100: #F0EDE8;
+  --color-gray-300: #C4BFB8;
+  --color-gray-500: #7A746E;
+  --color-gray-700: #3D3935;
+
+  /* Gradiente hero */
+  --gradient-hero: linear-gradient(135deg, #FF4D00 0%, #FF8C42 100%);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-dm-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-syne), sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-dm-mono), monospace;
+}
+
+/* Componentes Visuais Base (Conforme Identidade) */
+
+.prontu-btn {
+  @apply bg-[#FF4D00] text-white rounded-[6px] px-7 py-[14px] font-semibold text-base font-body shadow-[4px_4px_0_#0D0D0D] transition-transform duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#0D0D0D] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0_#0D0D0D];
+}
+
+.prontu-card {
+  @apply bg-white border-[1.5px] border-[#0D0D0D] rounded-xl shadow-[4px_4px_0_#0D0D0D] p-6;
+}
+
+.prontu-badge {
+  @apply bg-[#FFE600] text-[#0D0D0D] font-mono font-semibold text-[11px] uppercase tracking-[0.08em] px-2.5 py-1 rounded border border-[#0D0D0D];
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

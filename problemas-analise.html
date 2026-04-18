@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Problemas e Inconsistências - Prontu</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; line-height: 1.6; }
+    h1 { color: #0D0D0D; border-bottom: 3px solid #FF4D00; padding-bottom: 1rem; }
+    h2 { color: #FF4D00; margin-top: 2rem; }
+    h3 { color: #1A3FFF; }
+    .problema { background: #FFF3CD; border-left: 4px solid #FFC107; padding: 1rem; margin: 1rem 0; }
+    .erro { background: #F8D7DA; border-left: 4px solid #DC3545; padding: 1rem; margin: 1rem 0; }
+    .info { background: #D1ECF1; border-left: 4px solid #17A2B8; padding: 1rem; margin: 1rem 0; }
+    .codigo { background: #2D2D2D; color: #F7F5F0; padding: 1rem; border-radius: 4px; font-family: monospace; overflow-x: auto; }
+    .arrow { color: #FF4D00; font-size: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th, td { border: 1px solid #ddd; padding: 0.75rem; text-align: left; }
+    th { background: #0D0D0D; color: white; }
+    ul { padding-left: 1.5rem; }
+    li { margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+
+<h1>🔍 Análise de Problemas e Inconsistências</h1>
+
+<p>Analisei todos os arquivos do projeto e identifiquei vários pontos que podem causar problemas em produção.</p>
+
+<!-- PROBLEMA 1 -->
+<h2>⚠️ 1. Lógica de "1 trabalho grátis por mês" quebrada</h2>
+
+<div class="problema">
+<strong>Problema:</strong> O código ainda referência campos que foram removidos do banco.
+</div>
+
+<p><strong>Arquivo:</strong> <code>src/components/FormularioTrabalho.tsx:97</code></p>
+<div class="codigo">
+if (profile?.plano === "gratis" && profile?.trabalhos_gerados_mes >= 1) {
+  setIsPayModalOpen(true);
+}
+</div>
+
+<p><strong>Problema:</strong></p>
+<ul>
+  <li>Campo <code>plano</code> foi removido na migração 002_credits.sql</li>
+  <li>Campo <code>trabalhos_gerados_mes</code> foi removido na mesma migração</li>
+  <li>Agora o sistema usa <code>creditos</code> diretamente</li>
+  <li>Essa condição <strong>nunca será verdadeira</strong> porque esses campos não existem mais</li>
+</ul>
+
+<h3>O que acontece na prática:</h3>
+<p>Usuários logados podem gerar trabalhos indefinidamente desde que tenham créditos. O limite "1 por mês" não existe mais no código, mas a UI ainda promete isso ("1 trabalho grátis por mês" no landing e no modal de auth).</p>
+
+<!-- PROBLEMA 2 -->
+<h2>⚠️ 2. Lógica de Watermark incorreta</h2>
+
+<div class="erro">
+<strong>BUG CRÍTICO!</strong> A marca d'água quase NUNCA será adicionada.
+</div>
+
+<p><strong>Arquivo:</strong> <code>src/app/api/gerar-pdf/route.ts:78</code></p>
+<div class="codigo">
+// Marca d'água: apenas no crédito inicial gratuito (creditos === 1)
+// Se tem mais de 1 crédito, é porque comprou — sem marca d'água
+const addWatermark = creditos === 1;
+</div>
+
+<p><strong>Problema:</strong></p>
+<ul>
+  <li>Quando usuário compra 5 créditos, começa com 5</li>
+  <li>Após gerar 1º trabalho: 5 → 4 (não é === 1, sem marca d'água)</li>
+  <li>Após gerar 2º trabalho: 4 → 3 (não é === 1, sem marca d'água)</li>
+  <li>Após gerar 5º trabalho: 1 → 0 (AGORA é === 1, ADICIONA marca d'água!)</li>
+</ul>
+
+<p><strong>Resultado:</strong> O último trabalho (quando créditos estão acabando) que leva marca d'água, não o primeiro!</p>
+
+<h3>Solução correta:</h3>
+<p>Adicionar campo <code>primeiro_trabalho_feito</code> na tabela users para rastrear se o usuário já usou seu crédito gratuito.</p>
+
+<!-- PROBLEMA 3 -->
+<h2>⚠️ 3. Usuários novos podem começar com 0 créditos</h2>
+
+<div class="erro">
+<strong>BUG!</strong> Na criação do usuário, não há atribuição de créditos iniciais.
+</div>
+
+<p><strong>Arquivo:</strong> <code>src/lib/auth-server.ts:21-39</code></p>
+<div class="codigo">
+export async function createUserIfNotExists(email: string, nome: string, id: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .insert([{ id, email, nome, plano: 'gratis' }]) // ❌ plano não existe + sem creditos!
+    .select()
+    .single();
+}
+</div>
+
+<p><strong>Problema:</strong></p>
+<ul>
+  <li>Na migração 002, <code>creditos</code> tem DEFAULT 1</li>
+  <li>MASS o insert explicitly não passa <code>creditos</code></li>
+  <li>Em alguns casos (race conditions, banco fresh), pode iniciar como NULL ou 0</li>
+  <li>Usuário pode tentar gerar trabalho e já estar bloqueado</li>
+</ul>
+
+<h3> Recomendação:</h3>
+<div class="codigo">
+.insert([{ 
+  id, 
+  email, 
+  nome, 
+  plano: 'gratis',  // ❌ remove isso
+  creditos: 1      // ✅ adiciona isso
+}])
+</div>
+
+<!-- PROBLEMA 4 -->
+<h2>⚠️ 4. Webhook não é verdadeiramente idempotente</h2>
+
+<div class="problema">
+<strong>Risco:</strong> Se o webhook for chamado 2x, usuário recebe créditos dobrados.
+</div>
+
+<p><strong>Arquivo:</strong> <code>src/app/api/pagamento/webhook/route.ts</code></p>
+
+<div class="codigo">
+// Verificar se já foi processado (idempotência)
+const { data: pagamento } = await supabase
+  .from("pagamentos")
+  .select("status, creditos_comprados")
+  .eq("pix_id", pixId)
+  .single();
+
+if (pagamento?.status === "PAID") {
+  return NextResponse.json({ received: true });
+}
+
+// ... aí adiciona créditos
+await adicionarCreditos(userId, creditosAdicionar);
+</div>
+
+<p><strong>Problema:</strong></p>
+<ul>
+  <li>Existe verificação, MAS se falhar entre o check e o update, não há rollback</li>
+  <li>Se webhook der timeout na linha 47 (adicionarCreditos), mas a verificação passou, não retry</li>
+  <li>Sem Transactions.atomicidade</li>
+</ul>
+
+<h3>Cenário de falha:</h3>
+<ol>
+  <li>Webhook recebe evento PIX pago</li>
+  <li>Verifica status = PENDING ✅</li>
+  <li>Tenta adicionar créditos... <strong>TIMEEOUT</strong></li>
+  <li>Webhooks não têm retry automático no AbacatePay (configurável mas não usado)</li>
+  <li>Usuário PAGOU mas não recebeu créditos</li>
+</ol>
+
+<!-- PROBLEMA 5 -->
+<h2>⚠️ 5. Sem rate limiting na API de gerar PDF</h2>
+
+<div class="erro">
+<strong>Risco de abuse:</strong> Qualquer um pode spammar a API e gastar créditos do usuário logado.
+</div>
+
+<p><strong>Arquivo:</strong> <code>src/app/api/gerar-pdf/route.ts</code></p>
+
+<p>Não há:</p>
+<ul>
+  <li>Rate limit por IP</li>
+  <li>Rate limit por usuário</li>
+  <li>Circuit breaker</li>
+  <li>Timeout nos serviços externos (Gemini, geração de capa)</li>
+</ul>
+
+<p><strong>Cenário:</strong></p>
+<ul>
+  <li>Usuário malicioso (ou bug no frontend) faz 100 requests simultâneas</li>
+  <li>Cada uma consome 1 crédito</li>
+  <li>Usuário perde todos os créditos em segundos</li>
+</ul>
+
+<!-- PROBLEMA 6 -->
+<h2>⚠️ 6. Políticas RLS podem bloquear criação de usuários</h2>
+
+<div class="problema">
+<strong>Potential blocker:</strong> Usuários novos podem falhar no login.
+</div>
+
+<p><strong>Arquivo:</strong> <code>supabase/migrations/001_initial.sql:39-40</code></p>
+
+<div class="codigo">
+CREATE POLICY "Users read own" ON users FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users update own" ON users FOR UPDATE USING (auth.uid() = id);
+-- ❌ NÃO EXISTE: INSERT policy!
+</div>
+
+<p><strong>Problema:</strong></p>
+<ul>
+  <li>Quando usuário faz login pela 1ª vez via Google OAuth</li>
+  <li>O callback tenta fazer INSERT na tabela users</li>
+  <li>Se as policies default.blockanônimas estiver ativa, pode falhar</li>
+  <li>Porém, como usa SECURITY DEFINER nas funções, geralmente funciona</li>
+  <li>MAS é uma fragilidade - se alguém changer as policies, quebra</li>
+</ul>
+
+<!-- PROBLEMA 7 -->
+<h2>⚠️ 7. Tracking de "mês atual" removido sem替代</h2>
+
+<div class="info">
+<strong>Impacto:</strong> Não há como fazer reset mensal automático.
+</div>
+
+<p>Das migrações:</p>
+<div class="codigo">
+-- REMOVIDO:
+-- mes_atual TEXT DEFAULT to_char(NOW(), 'YYYY-MM'),
+-- trabalhos_gerados_mes INTEGER DEFAULT 0,
+</div>
+
+<p>Se no futuro quiser implementar "1 trabalho grátis por mês", não há estrutura para isso. Não há:</p>
+<ul>
+  <li>Coluna para trackar último mês usado</li>
+  <li>Function para resetar monthly</li>
+  <li>Trigger para auto-reset</li>
+</ul>
+
+<!-- PROBLEMA 8 -->
+<h2>⚠️ 8. Mensagens de erro não amigáveis</h2>
+
+<div class="problema">
+<strong>UX:</strong> Usuário não sabe o que fazer quando algo dá errado.
+</div>
+
+<p>Exemplos no código:</p>
+<ul>
+  <li><code>src/components/FormularioTrabalho.tsx:126</code> → "Ops! Algo deu errado. Tenta de novo?"</li>
+  <li><code>src/components/FormularioTrabalho.tsx:84</code> → "O enunciado deve ter pelo menos 20 caracteres"</li>
+  <li><code>src/app/api/gerar-pdf/route.ts:123</code> → "Ocorreu um erro interno ao processar o seu trabalho"</li>
+</ul>
+
+<p>Essas mensagens são genéricas. Usuário não sabe:</p>
+<ul>
+  <li>Se o problema é conexão, API, banco...</li>
+  <li>Se precisa esperar ou tentar novamente</li>
+  <li>Se deve contactar suporte</li>
+</ul>
+
+<!-- PROBLEMA 9 -->
+<h2>⚠️ 9. Callback de auth redireciona para /dashboard mesmo em mobile</h2>
+
+<div class="info">
+<strong>UX:</strong> Pode quebras experiência mobile se não houver redirect correto.
+</div>
+
+<p><strong>Arquivo:</strong> <code>src/app/auth/callback/route.ts:8</code></p>
+<div class="codigo">
+const next = searchParams.get("next") ?? "/dashboard";
+</div>
+
+<p>Sempre redireciona para /dashboard. Em alguns fluxos (ex: veio do landing page), seria melhor voltar para onde estava.</p>
+
+<!-- PROBLEMA 10 -->
+<h2>⚠️ 10. Sem verificação de limites no frontend</h2>
+
+<div class="info">
+<strong>UX:</strong> Usuário só descobre que créditos acabaram DEPOIS de tentar.
+</div>
+
+<p><strong>No FormularioTrabalho:</strong></p>
+<ul>
+  <li>Usuário preenche tudo</li>
+  <li>Clica em gerar</li>
+  <li>Só AÍ a API retorna erro</li>
+  <li>Então abre modal de pagamento</li>
+</ul>
+
+<p><strong>Melhoria:</strong> Mostrar Credits remaining no formulário e desabilitar botão se créditos = 0.</p>
+
+<!-- RESUMO -->
+<h2>📋 Resumo dos Problemas por Prioridade</h2>
+
+<table>
+  <tr>
+    <th>Prioridade</th>
+    <th>Problema</th>
+    <th>Arquivo</th>
+  </tr>
+  <tr>
+    <td>🔴 CRÍTICO</td>
+    <td>Lógica de watermark invertida</td>
+    <td>route.ts:78</td>
+  </tr>
+  <tr>
+    <td>🔴 CRÍTICO</td>
+    <td>Sem rate limiting - abuso de créditos</td>
+    <td>api/gerar-pdf</td>
+  </tr>
+  <tr>
+    <td>🟠 ALTO</td>
+    <td>Webhook não idempotente - pode perder créditos</td>
+    <td>webhook/route.ts</td>
+  </tr>
+  <tr>
+    <td>🟠 ALTO</td>
+    <td>Lógica "1 trabalho/mês" quebrada (campos removidos)</td>
+    <td>FormularioTrabalho.tsx</td>
+  </tr>
+  <tr>
+    <td>🟡 MÉDIO</td>
+    <td>Usuário novo pode começar com 0 créditos</td>
+    <td>auth-server.ts</td>
+  </tr>
+  <tr>
+    <td>🟡 MÉDIO</td>
+    <td>Sem estrutura para reset mensal</td>
+    <td>migrations</td>
+  </tr>
+  <tr>
+    <td>🟢 BAIXO</td>
+    <td>Mensagens de erro genéricas</td>
+    <td>vários</td>
+  </tr>
+  <tr>
+    <td>🟢 BAIXO</td>
+    <td>UX: não mostra créditos no formulário</td>
+    <td>FormularioTrabalho</td>
+  </tr>
+</table>
+
+<h2>🚀 Recomendações Imediatas</h2>
+
+<ol>
+  <li><strong>Fix watermark:</strong> Usar campo booleano <code>primeiro_trabalho_gratis_usado</code></li>
+  <li><strong>Add rate limiting:</strong> Usar Upstash ou similar para limitar requisições</li>
+  <li><strong>Fix webhook:</strong> Colocar tudo em transaction e adicionar retry logic</li>
+  <li><strong>Remove lógica morta:</strong> Limpar código que referencia campos antigos</li>
+  <li><strong>Add créditos na criação:</strong> Sempre passar <code>creditos: 1</code> no insert</li>
+</ol>
+
+</body>
+</html>

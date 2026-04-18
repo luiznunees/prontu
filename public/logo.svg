@@ -1,0 +1,8 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="6" width="40" height="40" rx="8" fill="#FF4D00" stroke="#0D0D0D" stroke-width="3"/>
+  <path d="M15 16H27C30.866 16 34 19.134 34 23C34 26.866 30.866 30 27 30H15V16Z" fill="#F7F5F0" stroke="#0D0D0D" stroke-width="3"/>
+  <path d="M15 30V40" stroke="#0D0D0D" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="24" cy="23" r="3" fill="#0D0D0D"/>
+  
+  <text x="54" y="41" font-family="'Syne', sans-serif" font-weight="bold" font-size="36" fill="#0D0D0D" letter-spacing="-1">prontu.</text>
+</svg>

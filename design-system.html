@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prontu Design System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       DESIGN SYSTEM TOKENS - PRONTU
+       ======================================== */
+
+    :root {
+      /* Cores Primárias */
+      --color-ink: #0D0D0D;
+      --color-paper: #F7F5F0;
+      --color-accent: #FF4D00;
+      --color-accent-soft: #FFF0EA;
+
+      /* Cores Secundárias */
+      --color-blue: #1A3FFF;
+      --color-yellow: #FFE600;
+      --color-green: #00C46A;
+
+      /* Cores Neutras */
+      --color-gray-100: #F0EDE8;
+      --color-gray-300: #C4BFB8;
+      --color-gray-500: #7A746E;
+      --color-gray-700: #3D3935;
+
+      /* Tipografia */
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+
+      /* Espaçamento */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      --space-3xl: 4rem;
+
+      /* Border Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-xl: 12px;
+      --radius-full: 9999px;
+
+      /* Sombras */
+      --shadow-sm: 2px 2px 0 0 #0D0D0D;
+      --shadow-md: 4px 4px 0 0 #0D0D0D;
+      --shadow-lg: 6px 6px 0 0 #0D0D0D;
+      --shadow-xl: 8px 8px 0 0 #0D0D0D;
+
+      /* Transições */
+      --transition-fast: 100ms ease;
+      --transition-normal: 200ms ease;
+      --transition-slow: 300ms ease;
+
+      /* Z-Index */
+      --z-base: 0;
+      --z-dropdown: 100;
+      --z-sticky: 200;
+      --z-modal: 300;
+      --z-popover: 400;
+      --z-toast: 500;
+    }
+
+    /* Reset Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-paper);
+      color: var(--color-ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    /* ========================================
+       COMPONENTES BASE
+       ======================================== */
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.875rem 1.75rem;
+      border: 2px solid var(--color-ink);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translate(-2px, -2px);
+    }
+
+    .btn:active {
+      transform: translate(0, 0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Primary Button */
+    .btn-primary {
+      background-color: var(--color-accent);
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary:active {
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Secondary Button */
+    .btn-secondary {
+      background-color: white;
+      color: var(--color-ink);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary:active {
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Ghost Button */
+    .btn-ghost {
+      background-color: transparent;
+      color: var(--color-ink);
+      box-shadow: none;
+    }
+
+    .btn-ghost:hover {
+      background-color: var(--color-gray-100);
+    }
+
+    /* Button Sizes */
+    .btn-sm {
+      font-size: 0.875rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .btn-lg {
+      font-size: 1.125rem;
+      padding: 1rem 2rem;
+    }
+
+    /* Button Variants */
+    .btn-blue {
+      background-color: var(--color-blue);
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-yellow {
+      background-color: var(--color-yellow);
+      color: var(--color-ink);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-green {
+      background-color: var(--color-green);
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ========================================
+       CARDS
+       ======================================== */
+
+    .card {
+      background-color: white;
+      border: 2px solid var(--color-ink);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      padding: 1.5rem;
+    }
+
+    .card-hover {
+      transition: all var(--transition-normal);
+    }
+
+    .card-hover:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* ========================================
+       BADGES
+       ======================================== */
+
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.25rem 0.625rem;
+      border: 1px solid var(--color-ink);
+      border-radius: var(--radius-sm);
+    }
+
+    .badge-yellow {
+      background-color: var(--color-yellow);
+      color: var(--color-ink);
+    }
+
+    .badge-accent {
+      background-color: var(--color-accent);
+      color: white;
+    }
+
+    .badge-ink {
+      background-color: var(--color-ink);
+      color: white;
+    }
+
+    .badge-blue {
+      background-color: var(--color-blue);
+      color: white;
+    }
+
+    .badge-green {
+      background-color: var(--color-green);
+      color: white;
+    }
+
+    .badge-gray {
+      background-color: var(--color-gray-300);
+      color: var(--color-ink);
+    }
+
+    /* ========================================
+       INPUTS
+       ======================================== */
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .input-label {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--color-ink);
+    }
+
+    .input {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--color-ink);
+      border-radius: var(--radius-md);
+      background-color: white;
+      color: var(--color-ink);
+      transition: all var(--transition-fast);
+      outline: none;
+    }
+
+    .input:focus {
+      box-shadow: var(--shadow-sm);
+    }
+
+    .input::placeholder {
+      color: var(--color-gray-500);
+    }
+
+    .input-error {
+      border-color: #E53935;
+    }
+
+    /* ========================================
+       LAYOUT - DOCUMENTAÇÃO
+       ======================================== */
+
+    .doc-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-2xl);
+    }
+
+    .doc-header {
+      margin-bottom: var(--space-3xl);
+      padding-bottom: var(--space-2xl);
+      border-bottom: 2px solid var(--color-ink);
+    }
+
+    .doc-title {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-md);
+    }
+
+    .doc-subtitle {
+      font-size: 1.125rem;
+      color: var(--color-gray-700);
+    }
+
+    .doc-section {
+      margin-bottom: var(--space-3xl);
+    }
+
+    .doc-section-title {
+      font-size: 1.5rem;
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--color-gray-300);
+    }
+
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .doc-grid-colors {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: var(--space-md);
+    }
+
+    .color-swatch {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .color-preview {
+      height: 80px;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--color-ink);
+    }
+
+    .color-info {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .color-name {
+      font-weight: 600;
+    }
+
+    .color-hex {
+      color: var(--color-gray-700);
+    }
+
+    /* Typography Display */
+    .type specimen {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-lg);
+    }
+
+    .type-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-gray-500);
+      min-width: 80px;
+    }
+
+    /* Code Block */
+    .code-block {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      background-color: var(--color-ink);
+      color: var(--color-paper);
+      padding: var(--space-md);
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+      margin-top: var(--space-md);
+    }
+
+    .code-block .comment {
+      color: var(--color-gray-500);
+    }
+
+    .code-block .tag {
+      color: var(--color-yellow);
+    }
+
+    .code-block .attr {
+      color: var(--color-blue);
+    }
+
+    .code-block .value {
+      color: var(--color-green);
+    }
+  </style>
+</head>
+<body>
+  <div class="doc-container">
+    <!-- Header -->
+    <header class="doc-header">
+      <h1 class="doc-title">Prontu Design System</h1>
+      <p class="doc-subtitle">Sistema de design e componentes para o projeto Prontu</p>
+    </header>
+
+    <!-- Cores -->
+    <section class="doc-section">
+      <h2 class="doc-section-title">Cores</h2>
+      
+      <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">Primárias</h3>
+      <div class="doc-grid-colors">
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-ink);"></div>
+          <div class="color-info">
+            <div class="color-name">Ink</div>
+            <div class="color-hex">#0D0D0D</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-paper);"></div>
+          <div class="color-info">
+            <div class="color-name">Paper</div>
+            <div class="color-hex">#F7F5F0</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-accent);"></div>
+          <div class="color-info">
+            <div class="color-name">Accent</div>
+            <div class="color-hex">#FF4D00</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-accent-soft);"></div>
+          <div class="color-info">
+            <div class="color-name">Accent Soft</div>
+            <div class="color-hex">#FFF0EA</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.125rem; margin: 2rem 0 1rem;">Secundárias</h3>
+      <div class="doc-grid-colors">
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-blue);"></div>
+          <div class="color-info">
+            <div class="color-name">Blue</div>
+            <div class="color-hex">#1A3FFF</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-yellow);"></div>
+          <div class="color-info">
+            <div class="color-name">Yellow</div>
+            <div class="color-hex">#FFE600</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-green);"></div>
+          <div class="color-info">
+            <div class="color-name">Green</div>
+            <div class="color-hex">#00C46A</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.125rem; margin: 2rem 0 1rem;">Neutras</h3>
+      <div class="doc-grid-colors">
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-gray-100);"></div>
+          <div class="color-info">
+            <div class="color-name">Gray 100</div>
+            <div class="color-hex">#F0EDE8</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-gray-300);"></div>
+          <div class="color-info">
+            <div class="color-name">Gray 300</div>
+            <div class="color-hex">#C4BFB8</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-gray-500);"></div>
+          <div class="color-info">
+            <div class="color-name">Gray 500</div>
+            <div class="color-hex">#7A746E</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-preview" style="background-color: var(--color-gray-700);"></div>
+          <div class="color-info">
+            <div class="color-name">Gray 700</div>
+            <div class="color-hex">#3D3935</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tipografia -->
+    <section class="doc-section">
+      <h2 class="doc-section-title">Tipografia</h2>
+      <p style="margin-bottom: 1.5rem;">Fontes: <strong>Syne</strong> (Display), <strong>DM Sans</strong> (Body), <strong>DM Mono</strong> (Código)</p>
+      
+      <div class="type specimen">
+        <div class="type-row">
+          <span class="type-label">Display</span>
+          <span style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 700;">Syne - O título principal</span>
+        </div>
+        <div class="type-row">
+          <span class="type-label">Heading 1</span>
+          <span style="font-family: var(--font-display); font-size: 2rem; font-weight: 700;">Prontu - Headlines</span>
+        </div>
+        <div class="type-row">
+          <span class="type-label">Heading 2</span>
+          <span style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;">Seções e subtítulos</span>
+        </div>
+        <div class="type-row">
+          <span class="type-label">Body</span>
+          <span style="font-family: var(--font-body); font-size: 1rem;">DM Sans - O texto principal do corpo da página.</span>
+        </div>
+        <div class="type-row">
+          <span class="type-label">Mono</span>
+          <span style="font-family: var(--font-mono); font-size: 0.875rem;">DM Mono - Código e elementos técnicos.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Botões -->
+    <section class="doc-section">
+      <h2 class="doc-section-title">Botões</h2>
+      
+      <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">Variantes</h3>
+      <div class="doc-grid">
+        <button class="btn btn-primary">Primary</button>
+        <button class="btn btn-secondary">Secondary</button>
+        <button class="btn btn-ghost">Ghost</button>
+      </div>
+
+      <h3 style="font-size: 1.125rem; margin: 2rem 0 1rem;">Cores</h3>
+      <div class="doc-grid">
+        <button class="btn btn-primary">Accent</button>
+        <button class="btn btn-blue">Blue</button>
+        <button class="btn btn-yellow">Yellow</button>
+        <button class="btn btn-green">Green</button>
+      </div>
+
+      <h3 style="font-size: 1.125rem; margin: 2rem 0 1rem;">Tamanhos</h3>
+      <div class="doc-grid" style="align-items: center;">
+        <button class="btn btn-primary btn-sm">Small</button>
+        <button class="btn btn-primary">Medium</button>
+        <button class="btn btn-primary btn-lg">Large</button>
+      </div>
+
+      <h3 style="font-size: 1.125rem; margin: 2rem 0 1rem;">Estados</h3>
+      <div class="doc-grid" style="align-items: center;">
+        <button class="btn btn-primary">Normal</button>
+        <button class="btn btn-primary" disabled>Disabled</button>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="doc-section">
+      <h2 class="doc-section-title">Cards</h2>
+      
+      <div class="doc-grid">
+        <div class="card">
+          <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Card Padrão</h3>
+          <p style="color: var(--color-gray-700);">Card com sombra e borda neumórfica.</p>
+        </div>
+        
+        <div class="card card-hover">
+          <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Card com Hover</h3>
+          <p style="color: var(--color-gray-700);">Passe o mouse para ver o efeito.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Badges -->
+    <section class="doc-section">
+      <h2 class="doc-section-title">Badges</h2>
+      
+      <div class="doc-grid" style="align-items: center;">
+        <span class="badge badge-yellow">Novo</span>
+        <span class="badge badge-accent">Premium</span>
+        <span class="badge badge-ink">Beta</span>
+        <span class="badge badge-blue">Info</span>
+        <span class="badge badge-green">Sucesso</span>
+        <span class="badge badge-gray">Rascunho</span>
+      </div>
+    </section>
+
+    <!-- Inputs -->
+    <section class="doc-section">
+      <h2 class="doc-section-title">Inputs</h2>
+      
+      <div style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 400px;">
+        <div class="input-group">
+          <label class="input-label">Nome completo</label>
+          <input type="text" class="input" placeholder="Digite seu nome...">
+        </div>
+        
+        <div class="input-group">
+          <label class="input-label">Email</label>
+          <input type="email" class="input" placeholder="voce@exemplo.com">
+        </div>
+        
+        <div class="input-group">
+          <label class="input-label">Campo com erro</label>
+          <input type="text" class="input input-error" value="Valor inválido">
+        </div>
+      </div>
+    </section>
+
+    <!-- Tokens -->
+    <section class="doc-section">
+      <h2 class="doc-section-title">Tokens CSS</h2>
+      <p style="margin-bottom: 1rem;">Use estes tokens no seu CSS:</p>
+      
+      <pre class="code-block"><code>/* Cores */
+--color-ink
+--color-paper
+--color-accent
+--color-accent-soft
+--color-blue
+--color-yellow
+--color-green
+--color-gray-100
+--color-gray-300
+--color-gray-500
+--color-gray-700
+
+/* Tipografia */
+--font-display
+--font-body
+--font-mono
+
+/* Espaçamento */
+--space-xs --space-sm --space-md --space-lg --space-xl --space-2xl --space-3xl
+
+/* Border Radius */
+--radius-sm --radius-md --radius-lg --radius-xl --radius-full
+
+/* Sombras */
+--shadow-sm --shadow-md --shadow-lg --shadow-xl
+
+/* Transições */
+--transition-fast --transition-normal --transition-slow</code></pre>
+    </section>
+
+    <!-- Como Usar -->
+    <section class="doc-section">
+      <h2 class="doc-section-title">Como Usar</h2>
+      <p style="margin-bottom: 1rem;">Adicione as variáveis CSS no seu projeto:</p>
+      
+      <pre class="code-block"><code>&lt;link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"&gt;
+
+&lt;style&gt;
+  :root {
+    --color-ink: #0D0D0D;
+    --color-paper: #F7F5F0;
+    --color-accent: #FF4D00;
+    /* ... demais tokens */
+  }
+&lt;/style&gt;</code></pre>
+    </section>
+  </div>
+</body>
+</html>

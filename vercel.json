@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/notificacoes",
+      "schedule": "0 10 * * *"
+    }
+  ],
+  "functions": {
+    "src/app/api/gerar-pdf/route.ts": { "maxDuration": 60 },
+    "src/app/api/gerar-capa/route.ts": { "maxDuration": 30 },
+    "src/app/api/cron/notificacoes/route.ts": { "maxDuration": 60 }
+  }
+}
