@@ -89,8 +89,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar crédito disponível (grátis ou pago) - pular em modo teste
-    let podeGerar = !testMode;
-    let tipo = testMode ? "gratis" : "pago";
+    let podeGerar = true;
+    let tipo = testMode ? "teste" : "pago";
     let creditosAtuais = 1;
     
     if (!testMode) {
