@@ -48,8 +48,10 @@ export async function generateTrabalho(
     numeroPaginas = 3,
   } = config;
 
-  const prompt = `Gere trabalho escolar BR.
-Retorne JSON válido: {"titulo":"texto","tema":"texto","disciplina":"${disciplina}","secoes":[{"titulo":"INTRODUÇÃO","conteudo":"texto"},{"titulo":"DESENVOLVIMENTO","conteudo":"texto"},{"titulo":"CONCLUSÃO","conteudo":"texto"}],"referencias":["fonte"],"palavrasChave":["palavra"]}
+  const prompt = `Gere trabalho escolar BR com negrito e exemplos.
+Use **palavra** para destaque.
+Inclua exemplos práticos e exercício resolvido no desenvolvimento.
+Retorne JSON: {"titulo":"txt","tema":"txt","disciplina":"${disciplina}","secoes":[{"titulo":"INTRODUÇÃO","conteudo":"txt **destaque**"},{"titulo":"DESENVOLVIMENTO","conteudo":"Exemplo prático... Exercício... **destaque**..."},{"titulo":"CONCLUSÃO","conteudo":"txt"}],"referencias":["fonte"],"palavrasChave":["palavra"]}
 Enunciado: ${enunciado}`;
 
   let lastError: Error | null = null;
