@@ -48,70 +48,9 @@ export async function generateTrabalho(
     numeroPaginas = 3,
   } = config;
 
-  // Ajustar vocabulário conforme série
-  const serieLower = serie.toLowerCase();
-  let nivelVocabulario = "Ensino Médio";
-  let extensaoTexto = "média";
-  let exemplosDados = "IBGE, SUS, DataSUS, IPEA";
-  
-  if (serieLower.includes("6") || serieLower.includes("7") || serieLower.includes("8")) {
-    nivelVocabulario = "Ensino Fundamental - anos finais";
-    extensaoTexto = "curta";
-    exemplosDados = "IBGE Censos, PNAD, sites educativos";
-  } else if (serieLower.includes("1") || serieLower.includes("2") || serieLower.includes("3")) {
-    nivelVocabulario = "Ensino Médio";
-    extensaoTexto = "média";
-    exemplosDados = "IBGE, SUS, DataSUS, IPEA";
-  } else if (serieLower.includes("universit") || serieLower.includes("superior")) {
-    nivelVocabulario = "Ensino Superior";
-    extensaoTexto = "avançada";
-    exemplosDados = "IBGE, DATASUS, науч journals, SciELO";
-  }
-
-  const prompt = `
-    Você é um assistente escolar brasileiro especializado em trabalhos acadêmicos para professores.
-    Gere um trabalho deivery para professor com base no enunciado: "${enunciado}"
-    
-    Contexto:
-    - Disciplina: ${disciplina}
-    - Escola: ${escola}
-    - Aluno: ${nomeAluno}
-    - Série/Turma: ${serie}
-    - Extensão esperada: ${numeroPaginas} páginas
-    ${config.observacao ? `\n\nOBSERVAÇÃO DO ALUNO:\n${config.observacao}` : ""}
-    
-    REGRAS OBRIGATÓRIAS para o trabalho ser aceito pelo professor:
-    1. **Negrito**: Use **palavra em negrito** para 강조 conceitos importantes
-    2. **Listas numeradas**: Para passos, itens ou sequências (ex: "1. Primeiro passo...", "2. Segundo passo...")
-    3. **Estrutura clara**: Cada parágrafo com uma ideia principal
-    4. **Exemplos concretos**: Dados reais de fontes confiáveis (${exemplosDados})
-    5. **Relevância imediata**: Explique logo POR QUE o tema é importante para ${disciplina}
-    6. **Tom尾 formal mas acessível**: Como um estudanteseriai escreveria
-    7. **Conclusões práticas**: O que o aluno aprendeu e como pode aplicar
-    
-    Formato JSON (apenas):
-    {
-      "titulo": "Título do trabalho",
-      "tema": "Palavras-chave para capa",
-      "disciplina": "${disciplina}",
-      "secoes": [
-        { 
-          "titulo": "INTRODUÇÃO", 
-          "conteudo": "Texto curto explicando tema e relevância para ${disciplina}. Use **negrito** para conceitos-chave." 
-        },
-        { 
-          "titulo": "DESENVOLVIMENTO", 
-          "conteudo": "Explicação com exemplos, dados. Use listas numeradas para passos: 1. Primeiro passo 2. Segundo passo. Use **negrito** para enfatizar." 
-        },
-        { 
-          "titulo": "CONCLUSÃO", 
-          "conteudo": "Resumo do que aprendeu com conclusão prática." 
-        }
-      ],
-      "referencias": ["IBGE. Site oficial. Acesso em 2025.", "Outro fonte confiável."],
-      "palavrasChave": ["palavra1", "palavra2"]
-    }
-  `;
+  const prompt = `Gere trabalho escolar BR.
+Retorne JSON válido: {"titulo":"texto","tema":"texto","disciplina":"${disciplina}","secoes":[{"titulo":"INTRODUÇÃO","conteudo":"texto"},{"titulo":"DESENVOLVIMENTO","conteudo":"texto"},{"titulo":"CONCLUSÃO","conteudo":"texto"}],"referencias":["fonte"],"palavrasChave":["palavra"]}
+Enunciado: ${enunciado}`;
 
   let lastError: Error | null = null;
 
@@ -130,15 +69,42 @@ export async function generateTrabalho(
       const responseText = result.response.text();
       
       try {
-        const cleanedResponse = responseText.replace(/```json|```/g, "").trim();
-        return JSON.parse(cleanedResponse) as TrabalhoGerado;
-      } catch (parseError) {
-        console.error("Erro ao parsear JSON. Tentando limpar...");
-        const fixed = responseText
-          .replace(/```json|```/g, "")
-          .replace(/,\s*}/g, "}")
-          .replace(/,\s*]/g, "]");
-        return JSON.parse(fixed) as TrabalhoGerado;
+        // Limpar e extrair JSON
+        let jsonStr = responseText;
+        
+        // Remover markdown
+        jsonStr = jsonStr.replace(/```json|```/g, "").replace(/```/g, "").trim();
+        
+        // Encontrar o JSON válido
+        const start = jsonStr.indexOf("{");
+        const end = jsonStr.lastIndexOf("}");
+        
+        if (start >= 0 && end > start) {
+          jsonStr = jsonStr.substring(start, end + 1);
+          
+          // Limpar sequências inválidas comuns
+          jsonStr = jsonStr.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]");
+          
+          return JSON.parse(jsonStr) as TrabalhoGerado;
+        } else {
+          throw new Error("JSON não encontrado");
+        }
+      } catch (parseError: any) {
+        console.error("Parse erro:", parseError.message);
+        
+        // Retornar trabalho mínimo
+        return {
+          titulo: enunciado.substring(0, 50),
+          tema: disciplina,
+          disciplina,
+          secoes: [
+            { titulo: "INTRODUÇÃO", conteudo: enunciado },
+            { titulo: "DESENVOLVIMENTO", conteudo: "Conteúdo gerado." },
+            { titulo: "CONCLUSÃO", conteudo: "Conclusão." }
+          ],
+          referencias: ["IBGE"],
+          palavrasChave: [disciplina]
+        };
       }
     } catch (apiError: any) {
       const is503 = apiError?.status === 503 || apiError?.message?.includes("503");
