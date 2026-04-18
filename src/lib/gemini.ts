@@ -129,8 +129,17 @@ export async function generateTrabalho(
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
       
-      const cleanedResponse = responseText.replace(/```json|```/g, "").trim();
-      return JSON.parse(cleanedResponse) as TrabalhoGerado;
+      try {
+        const cleanedResponse = responseText.replace(/```json|```/g, "").trim();
+        return JSON.parse(cleanedResponse) as TrabalhoGerado;
+      } catch (parseError) {
+        console.error("Erro ao parsear JSON. Tentando limpar...");
+        const fixed = responseText
+          .replace(/```json|```/g, "")
+          .replace(/,\s*}/g, "}")
+          .replace(/,\s*]/g, "]");
+        return JSON.parse(fixed) as TrabalhoGerado;
+      }
     } catch (apiError: any) {
       const is503 = apiError?.status === 503 || apiError?.message?.includes("503");
       const isOverload = apiError?.message?.includes("high demand") || apiError?.message?.includes("temporarily unavailable");
