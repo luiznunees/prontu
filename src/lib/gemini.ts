@@ -34,7 +34,7 @@ export interface TrabalhoGerado {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-const MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
+const MODELS = ["gemini-2.0-flash-exp", "gemini-2.5-flash"];
 
 export async function generateTrabalho(
   enunciado: string,

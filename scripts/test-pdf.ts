@@ -24,7 +24,8 @@ async function testePDF() {
     });
 
     if (!gerarResponse.ok) {
-      throw new Error(`Erro HTTP: ${gerarResponse.status}`);
+      const text = await gerarResponse.text();
+      throw new Error(`Erro HTTP: ${gerarResponse.status} - ${text}`);
     }
 
     const trabalho = await gerarResponse.json();
@@ -56,7 +57,8 @@ async function testePDF() {
 
     if (!pdfResponse.ok) {
       const err = await pdfResponse.text();
-      throw new Error(`Erro PDF: ${pdfResponse.status} - ${err}`);
+      console.log("Erro detalle:", err);
+      throw new Error(`Erro PDF: ${pdfResponse.status}`);
     }
 
     const pdfBuffer = await pdfResponse.arrayBuffer();
