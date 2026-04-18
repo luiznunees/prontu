@@ -34,7 +34,7 @@ async function testePDF() {
 
     // 2. Gerar PDF
     const pdfPayload = {
-      enunciado: trabalho.tema || trabalho.titulo,
+      enunciado: "Lei de Ohm e circuitos elétricos simples. Incluir exemplos práticos e exercícios resolvidos. Para 1ª série do Ensino Médio.",
       nomeAluno: payload.nomeAluno,
       escola: payload.escola,
       disciplina: payload.disciplina,
@@ -61,13 +61,20 @@ async function testePDF() {
       throw new Error(`Erro PDF: ${pdfResponse.status}`);
     }
 
-    const pdfBuffer = await pdfResponse.arrayBuffer();
+    const data = await pdfResponse.json();
+    const pdfBase64 = data.pdfBase64;
+    
+    if (!pdfBase64) {
+      throw new Error("PDF não encontrado na resposta");
+    }
+    
+    const pdfBuffer = Buffer.from(pdfBase64, "base64");
     console.log("✅ PDF gerado!");
-    console.log("   Tamanho:", (pdfBuffer.byteLength / 1024).toFixed(1), "KB");
+    console.log("   Tamanho:", (pdfBuffer.length / 1024).toFixed(1), "KB");
 
     // Salvar PDF para verificação
     const fs = await import("fs");
-    fs.writeFileSync("teste-trabalho-fisica.pdf", Buffer.from(pdfBuffer));
+    fs.writeFileSync("teste-trabalho-fisica.pdf", pdfBuffer);
     console.log("\n💾 PDF salvo como teste-trabalho-fisica.pdf");
 
     return { trabalho, pdfSize: pdfBuffer.byteLength };

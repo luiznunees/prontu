@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Teste Gráficos</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+    .card { background: white; padding: 20px; margin: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h2 { color: #333; }
+    canvas { max-width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>Teste de Gráficos Chart.js</h1>
+  
+  <div class="card">
+    <h2>🔌 Lei de Ohm</h2>
+    <canvas id="chart1"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>🌍 População</h2>
+    <canvas id="chart2"></canvas>
+  </div>
+
+  <script>
+    console.log('Iniciando...');
+    
+    // Chart 1
+    new Chart(document.getElementById('chart1'), {
+      type: 'line',
+      data: {
+        labels: ['0V', '2V', '4V', '6V', '8V', '10V'],
+        datasets: [{
+          label: 'Corrente',
+          data: [0, 0.4, 0.8, 1.2, 1.6, 2.0],
+          borderColor: '#8884d8',
+          fill: false
+        }]
+      },
+      options: { responsive: true }
+    });
+    
+    // Chart 2
+    new Chart(document.getElementById('chart2'), {
+      type: 'bar',
+      data: {
+        labels: ['Sudeste', 'Nordeste', 'Sul', 'Norte', 'CO'],
+        datasets: [{
+          label: 'População',
+          data: [89, 57, 30, 19, 16],
+          backgroundColor: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
+        }]
+      },
+      options: { responsive: true }
+    });
+    
+    console.log('Charts criados!');
+  </script>
+</body>
+</html>

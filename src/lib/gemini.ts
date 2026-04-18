@@ -23,6 +23,16 @@ export interface Secao {
   conteudo: string;
 }
 
+export interface GraficoData {
+  tipo?: "line" | "bar" | "pie" | "doughnut" | "area";
+  labels?: string[];
+  values?: number[];
+  titulo?: string;
+  eixoX?: string;
+  eixoY?: string;
+  cores?: string[];
+}
+
 export interface TrabalhoGerado {
   titulo: string;
   tema: string;
@@ -30,6 +40,7 @@ export interface TrabalhoGerado {
   secoes: Secao[];
   referencias: string[];
   palavrasChave: string[];
+  grafico?: GraficoData;
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -48,10 +59,11 @@ export async function generateTrabalho(
     numeroPaginas = 3,
   } = config;
 
-  const prompt = `Gere trabalho escolar BR com negrito e exemplos.
-Use **palavra** para destaque.
-Inclua exemplos práticos e exercício resolvido no desenvolvimento.
-Retorne JSON: {"titulo":"txt","tema":"txt","disciplina":"${disciplina}","secoes":[{"titulo":"INTRODUÇÃO","conteudo":"txt **destaque**"},{"titulo":"DESENVOLVIMENTO","conteudo":"Exemplo prático... Exercício... **destaque**..."},{"titulo":"CONCLUSÃO","conteudo":"txt"}],"referencias":["fonte"],"palavrasChave":["palavra"]}
+  const prompt = `Gere trabalho escolar BR com negrito, exemplos e gráficos quando aplicável.
+Use **palavra** para negrito.
+Inclua exemplos práticos e exercício resolvido.
+Se o tópico tiver dados numéricos (como populações, temperaturas, forças), gere um objeto "grafico" com os dados.
+Retorne JSON: {"titulo":"txt","tema":"txt","disciplina":"${disciplina}","secoes":[{"titulo":"INTRODUÇÃO","conteudo":"txt **destaque**"},{"titulo":"DESENVOLVIMENTO","conteudo":"Exemplo... [gráfico: tipo=bar, dados={labels:[], values:[], titulo=txt]"},{"titulo":"CONCLUSÃO","conteudo":"txt"}],"referencias":["fonte"],"palavrasChave":["palavra"],"grafico":{"tipo":"line|bar|pie","labels":[], "values":[],"titulo":"txt"}}
 Enunciado: ${enunciado}`;
 
   let lastError: Error | null = null;
