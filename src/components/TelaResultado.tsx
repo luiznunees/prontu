@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "./ui/Button";
 import Card from "./ui/Card";
 import ModalPagamento from "./ModalPagamento";
-import { detectarGrafico } from "@/lib/graficos-templates";
 
 interface TelaResultadoProps {
   trabalho: any; // O objeto JSON detalhado (titulo, secoes, etc)
@@ -33,59 +32,6 @@ export default function TelaResultado({
   const [pdfHumanizadoLoading, setPdfHumanizadoLoading] = useState(false);
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
-  const chartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstanceRef = useRef<any>(null);
-
-  // Detectar gráfico baseado no trabalho
-  const trabalhoTexto = trabalho?.titulo + " " + trabalho?.secoes?.map((s: any) => s.conteudo).join(" ");
-  const graficoDetectado = detectarGrafico(trabalho?.titulo || "", trabalhoTexto, trabalho?.disciplina);
-
-  useEffect(() => {
-    if (!chartRef.current || !graficoDetectado) return;
-
-    // Destruir gráfico anterior
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.destroy();
-    }
-
-    // Import dinâmico do Chart.js
-    import("chart.js/auto").then(({ default: Chart }) => {
-      const ctx = chartRef.current?.getContext("2d");
-      if (!ctx) return;
-
-      chartInstanceRef.current = new Chart(ctx, {
-        type: graficoDetectado.tipo,
-        data: {
-          labels: graficoDetectado.labels,
-          datasets: [{
-            label: graficoDetectado.titulo,
-            data: graficoDetectado.values,
-            backgroundColor: graficoDetectado.cores || ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c"],
-            borderColor: "#34495e",
-            borderWidth: 2,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: graficoDetectado.tipo === "pie" || graficoDetectado.tipo === "doughnut" },
-            title: { display: true, text: graficoDetectado.titulo, font: { size: 16, weight: "bold" as const } },
-          },
-          scales: graficoDetectado.tipo !== "pie" && graficoDetectado.tipo !== "doughnut" ? {
-            x: { title: { display: true, text: graficoDetectado.eixoX } },
-            y: { title: { display: true, text: graficoDetectado.eixoY }, beginAtZero: true },
-          } : undefined,
-        },
-      });
-    });
-
-    return () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.destroy();
-      }
-    };
-  }, [graficoDetectado]);
 
   // Exibir Confetes (CSS baseado em um fade-out após 3 seg)
   const [showConfetti, setShowConfetti] = useState(true);
@@ -228,15 +174,6 @@ export default function TelaResultado({
           </div>
           <h2 className="text-3xl font-display font-black text-ink uppercase mb-2">Trabalho pronto!</h2>
           <p className="text-ink/60 font-bold max-w-sm mx-auto line-clamp-2">{trabalho?.titulo}</p>
-
-          {graficoDetectado && (
-            <div className="mt-6 p-4 bg-white border-4 border-ink shadow-[4px_4px_0px_0px_#000]">
-              <h3 className="text-sm font-black uppercase mb-2">📊 Visualização</h3>
-              <div className="h-[280px]">
-                <canvas ref={chartRef}></canvas>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="px-8 pb-8 flex justify-center">
