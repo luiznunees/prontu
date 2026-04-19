@@ -16,6 +16,13 @@ export interface TrabalhoConfig {
   numeroPaginas?: number;
   observacao?: string;
   idioma?: "pt" | "en" | "es";
+  secoes?: {
+    introducao?: boolean;
+    desenvolvimento?: boolean;
+    conclusao?: boolean;
+    referencias?: boolean;
+    exercicios?: boolean;
+  };
 }
 
 export interface Secao {
@@ -48,24 +55,22 @@ export async function generateTrabalho(
     numeroPaginas = 3,
   } = config;
 
+// Construir seções baseadas nas opciones
+  const secoes = [];
+  
+  if (config.secoes?.introducao !== false) secoes.push("INTRODUÇÃO");
+  if (config.secoes?.desenvolvimento !== false) secoes.push("DESENVOLVIMENTO");
+  if (config.secoes?.conclusao !== false) secoes.push("CONCLUSÃO");
+  if (config.secoes?.exercicios) secoes.push("EXERCÍCIOS");
+  if (config.secoes?.referencias !== false) secoes.push("REFERÊNCIAS");
+
+const secoesJson = secoes.map(s => `{"titulo": "${s}", "conteudo": "..."}`).join(",\n    ");
+
 const prompt = `Gere trabalho escolar de ${disciplina} para ${serie}.
 Use **palavra** para negrito.
-Inclua exemplos práticos e exercício resolvido.
+Inclua exemplos práticos.
 
-RETORNE JSON válido:
-{
-  "titulo": "Título",
-  "tema": "Palavras-chave",
-  "disciplina": "${disciplina}",
-  "secoes": [
-    {"titulo": "INTRODUÇÃO", "conteudo": "Texto explicando o tema..."},
-    {"titulo": "DESENVOLVIMENTO", "conteudo": "Explicação detalhada com exemplos..."},
-    {"titulo": "CONCLUSÃO", "conteudo": "Resumo..."}
-  ],
-  "referencias": ["Fonte 1", "Fonte 2"],
-  "palavrasChave": ["palavra1", "palavra2"]
-}
-
+RETORNE JSON: {"titulo":"txt","tema":"txt","disciplina":"${disciplina}","secoes":[${secoesJson}],"referencias":["fonte"],"palavrasChave":["palavra"]}
 Enunciado: ${enunciado}`;
 
   let lastError: Error | null = null;

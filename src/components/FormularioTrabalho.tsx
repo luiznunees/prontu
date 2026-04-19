@@ -47,7 +47,14 @@ const FormularioTrabalho = ({ onGerar }: FormularioTrabalhoProps) => {
     cidade: "",
     templateId: "classico" as TemplateId,
     observacao: "",
-    incluirImagens: false
+    incluirImagens: false,
+    secoes: {
+      introducao: true,
+      desenvolvimento: true,
+      conclusao: true,
+      referencias: true,
+      exercicios: false
+    }
   });
 
   // Gerenciador de mensagens de progresso
@@ -336,6 +343,40 @@ const FormularioTrabalho = ({ onGerar }: FormularioTrabalhoProps) => {
               </div>
             </div>
           </label>
+        </div>
+
+        {/* Opções de Seções */}
+        <div className="mt-6">
+          <label className="block font-display font-bold mb-3 text-ink uppercase text-sm">
+            Seções do Trabalho
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: "introducao", label: "📝 Introdução" },
+              { key: "desenvolvimento", label: "📖 Desenvolvimento" },
+              { key: "conclusao", label: "📊 Conclusão" },
+              { key: "referencias", label: "📚 Referências" },
+              { key: "exercicios", label: "✏️ Exercícios" },
+            ].map((secao) => (
+              <button
+                key={secao.key}
+                onClick={() => setFormData({
+                  ...formData,
+                  secoes: {
+                    ...formData.secoes,
+                    [secao.key]: !formData.secoes[secao.key as keyof typeof formData.secoes]
+                  }
+                })}
+                className={`px-3 py-2 text-sm font-bold border-2 transition-colors ${
+                  formData.secoes[secao.key as keyof typeof formData.secoes]
+                    ? "border-ink bg-ink text-white"
+                    : "border-ink/30 text-ink/60 hover:border-ink"
+                }`}
+              >
+                {secao.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Seletor de Estilo */}

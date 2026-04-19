@@ -20,7 +20,12 @@ export async function POST(req: NextRequest) {
       cidade,
       templateId,
       observacao,
-      incluirImagens
+      incluirImagens,
+      incluirIntroducao = true,
+      incluirDesenvolvimento = true,
+      incluirConclusao = true,
+      incluirReferencias = true,
+      incluirExercicios = false
     } = body;
 
     const supabase = createServerSupabaseClient();
@@ -128,7 +133,14 @@ export async function POST(req: NextRequest) {
         escola: escolaFormatada,
         nomeAluno: nomeAlunoFormatado,
         serie: serieFormatada,
-        observacao
+        observacao,
+        secoes: {
+          introducao: incluirIntroducao,
+          desenvolvimento: incluirDesenvolvimento,
+          conclusao: incluirConclusao,
+          referencias: incluirReferencias,
+          exercicios: incluirExercicios
+        }
       });
     } catch (geminiError: any) {
       if (geminiError instanceof GeminiOverloadError || geminiError?.name === "GeminiOverloadError") {
